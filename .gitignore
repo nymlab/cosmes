@@ -38,3 +38,7 @@ yarn-error.log*
 
 # turbo
 .turbo
+
+# proto and contracts
+src/protobufs
+src/contracts

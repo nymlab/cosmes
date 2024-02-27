@@ -7,16 +7,8 @@
  */
 
 import { spawnSync } from "child_process";
-import degit from "degit";
-import {
-  mkdirSync,
-  readFileSync,
-  readdirSync,
-  renameSync,
-  rmSync,
-  statSync,
-  writeFileSync,
-} from "fs";
+import tiged from "tiged";
+import { mkdirSync, readFileSync, rmSync, writeFileSync } from "fs";
 import { globSync } from "glob";
 import { capitalize } from "lodash-es";
 import { dirname, join } from "path";
@@ -35,35 +27,23 @@ import { fileURLToPath } from "url";
  */
 const REPOS = [
   {
-    repo: "cosmos/cosmos-sdk#v0.47.9",
+    repo: "nymlab/cosmos-sdk#ptd",
     paths: ["proto"],
   },
   {
-    repo: "cosmos/ics23#master",
+    repo: "nymlab/protocol#main",
     paths: ["proto"],
   },
   {
-    repo: "cosmos/ibc-go#main",
+    repo: "cosmos/ics23#go/v0.10.0",
     paths: ["proto"],
   },
   {
-    repo: "CosmWasm/wasmd#main",
+    repo: "cosmos/ibc-go#v8.0.0",
     paths: ["proto"],
   },
   {
-    repo: "osmosis-labs/osmosis#main",
-    paths: ["proto"],
-  },
-  {
-    repo: "InjectiveLabs/sdk-go#master",
-    paths: ["proto"],
-  },
-  {
-    repo: "evmos/ethermint#main",
-    paths: ["proto"],
-  },
-  {
-    repo: "dymensionxyz/osmosis#main-dym",
+    repo: "CosmWasm/wasmd#v0.50.0",
     paths: ["proto"],
   },
 ];
@@ -85,7 +65,13 @@ console.log("Initialising directories...");
 console.log("Cloning required repos...");
 {
   await Promise.all(
-    REPOS.map(({ repo }) => degit(repo).clone(join(TMP_DIR, id(repo))))
+    REPOS.map(({ repo }) => {
+      if (repo.startsWith("nymlab")) {
+        return tiged(repo, { mode: "git" }).clone(join(TMP_DIR, id(repo)));
+      } else {
+        return tiged(repo).clone(join(TMP_DIR, id(repo)));
+      }
+    })
   );
 }
 
@@ -100,10 +86,7 @@ console.log("Generating TS files from proto files...");
           "generate",
           join(TMP_DIR, id(repo), path),
           "--output",
-          join(
-            PROTOBUFS_DIR,
-            repo.startsWith("dymensionxyz") ? "dymension" : ""
-          ),
+          PROTOBUFS_DIR,
         ],
         {
           cwd: process.cwd(),
@@ -113,29 +96,6 @@ console.log("Generating TS files from proto files...");
     }
     console.log(`✔️ [${repo}]`);
   }
-}
-
-console.log("Flattening dymension protobufs...");
-{
-  // Move all dirs in protobufs/dymension/osmosis out into protobufs/dymension
-  const dymensionDir = join(PROTOBUFS_DIR, "dymension");
-  const dymensionOsmosisDir = join(dymensionDir, "osmosis");
-  // Move all subdirs up one level
-  readdirSync(dymensionOsmosisDir).forEach((file) => {
-    const currentFile = join(dymensionOsmosisDir, file);
-    const stats = statSync(currentFile);
-    if (stats.isDirectory()) {
-      renameSync(currentFile, join(dymensionDir, file));
-    }
-  });
-  // Remove all empty dirs
-  readdirSync(dymensionDir).forEach((file) => {
-    const currentFile = join(dymensionDir, file);
-    const stats = statSync(currentFile);
-    if (stats.isDirectory() && stats.size === 0) {
-      rmSync(currentFile, { recursive: true, force: true });
-    }
-  });
 }
 
 console.log("Generating src/index.ts file and renaming exports...");
@@ -192,22 +152,6 @@ console.log("Generating src/index.ts file and renaming exports...");
   }
   generateIndexExports(PROTOBUFS_DIR);
   writeFileSync(join(PROTOBUFS_DIR, "index.ts"), contents);
-}
-
-console.log("Rewriting Injective's legacy CosmWasm dependencies...");
-{
-  const path = join(
-    PROTOBUFS_DIR,
-    "injective",
-    "wasmx",
-    "v1",
-    "proposal_pb.ts"
-  );
-  const contents = readFileSync(path, "utf8").replace(
-    "proposal_pb.js",
-    "proposal_legacy_pb.js"
-  );
-  writeFileSync(path, contents);
 }
 
 console.log("Cleaning up...");
