@@ -1,0 +1,1 @@
+{"version":3,"file":"getCw20Balance.d.ts","sourceRoot":"","sources":["../../../src/client/apis/getCw20Balance.ts"],"names":[],"mappings":"AAEA,MAAM,MAAM,oBAAoB,GAAG;IACjC,OAAO,EAAE,MAAM,CAAC;IAChB,KAAK,EAAE,MAAM,CAAC;CACf,CAAC;AAMF,wBAAsB,cAAc,CAClC,QAAQ,EAAE,MAAM,EAChB,EAAE,OAAO,EAAE,KAAK,EAAE,EAAE,oBAAoB,GACvC,OAAO,CAAC,MAAM,CAAC,CAejB"}

@@ -1,0 +1,1 @@
+{"version":3,"file":"types.d.ts","sourceRoot":"","sources":["../../../../src/wallet/wallets/metamask-injective/types.ts"],"names":[],"mappings":"AAAA,OAAO,KAAK,EAAE,sBAAsB,EAAE,MAAM,qBAAqB,CAAC;AAElE,MAAM,MAAM,QAAQ,GAAG,sBAAsB,CAAC;AAE9C,MAAM,MAAM,MAAM,GAAG;IACnB,QAAQ,CAAC,EAAE,QAAQ,GAAG,SAAS,CAAC;CACjC,CAAC"}
